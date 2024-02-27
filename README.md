@@ -7,3 +7,8 @@ Network & Distributed Systems Team:
 - Annie
 - Faustina
 - Zac
+
+UI
+- Han (hanvitC)
+- Seongho (seongholee4)
+- Nira (niranair01)
