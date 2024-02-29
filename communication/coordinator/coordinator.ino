@@ -1,90 +1,73 @@
 #include <esp_now.h>
 #include <WiFi.h>
- 
-// Variables for test data
-int int_value;
-float float_value;
-bool bool_value = true;
- 
-// MAC Address of responder - edit as required
-uint8_t broadcastAddress[] = {0x48, 0x27, 0xE2, 0x91, 0xA5, 0x94};
- 
-// Define a data structure
+
+uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // The broadcast MAC Address
+
 typedef struct struct_message {
-  char a[32];
-  int b;
-  float c;
-  bool d;
+  char text[128];
 } struct_message;
- 
-// Create a structured object
-struct_message myData;
- 
-// Peer info
+
+struct_message outgoingMessage;
+
 esp_now_peer_info_t peerInfo;
- 
-// Callback function called when data is sent
+
+// Callback function executed when data is received
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  memcpy(&outgoingMessage, incomingData, sizeof(outgoingMessage));
+  Serial.print("Data received: ");
+  Serial.println(outgoingMessage.text);
+}
+
+// Callback function executed when data is sent
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
- 
+
 void setup() {
-  
   // Set up Serial Monitor
   Serial.begin(115200);
- 
-  // Set ESP32 as a Wi-Fi Station
+
+  // Set ESP32 as a Wi-Fi Station and print MAC
   WiFi.mode(WIFI_STA);
- 
-  // Initilize ESP-NOW
+  Serial.println(WiFi.macAddress());
+
   if (esp_now_init() != ESP_OK) {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
- 
-  // Register the send callback
+
+  // Register callback functions
   esp_now_register_send_cb(OnDataSent);
-  
-  // Register peer
+  esp_now_register_recv_cb(OnDataRecv);
+
+  // Add broadcast MAC to peers
   memcpy(peerInfo.peer_addr, broadcastAddress, 6);
   peerInfo.channel = 0;  
   peerInfo.encrypt = false;
   
-  // Add peer        
   if (esp_now_add_peer(&peerInfo) != ESP_OK){
     Serial.println("Failed to add peer");
     return;
   }
+
+  Serial.println("Please input a direction (f,b,l,r) and a value (degrees for l,r and milliseconds for f,b). e.g. l45,f1000,etc.");
 }
- 
+
 void loop() {
- 
-  // Create test data
- 
-  // Generate a random integer
-  int_value = random(1,20);
- 
-  // Use integer to make a new float
-  float_value = 1.3 * int_value;
- 
-  // Invert the boolean value
-  bool_value = !bool_value;
-  
-  // Format structured data
-  strcpy(myData.a, "Welcome to the Workshop!");
-  myData.b = int_value;
-  myData.c = float_value;
-  myData.d = bool_value;
-  
-  // Send message via ESP-NOW
-  esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
-   
-  if (result == ESP_OK) {
-    Serial.println("Sending confirmed");
+  static String inputString = "";
+  // read and send string from serial buffer
+  if (Serial.available()) {
+    inputString = Serial.readString(); 
+    inputString.trim();
+    inputString.toCharArray(outgoingMessage.text, min(inputString.length() + 1, sizeof(outgoingMessage.text)));
+
+    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&outgoingMessage, sizeof(outgoingMessage));
+
+    if (result != ESP_OK) {
+      Serial.print("Send failed, error: ");
+      Serial.println(esp_err_to_name(result));
+    }
+
+    inputString = ""; 
   }
-  else {
-    Serial.println("Sending error");
-  }
-  delay(2000);
 }
