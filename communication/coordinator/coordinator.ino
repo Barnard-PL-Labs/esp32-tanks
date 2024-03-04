@@ -1,5 +1,6 @@
 #include <esp_now.h>
 #include <WiFi.h>
+#include <ArduinoJson.h>
 
 uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // The broadcast MAC Address
 
@@ -8,6 +9,10 @@ typedef struct struct_message {
 } struct_message;
 
 struct_message outgoingMessage;
+
+// global variables for json message
+String jsondata;
+StaticJsonDocument<64> doc; // 64 computed from https://arduinojson.org/v6/assistant/
 
 esp_now_peer_info_t peerInfo;
 
@@ -50,24 +55,35 @@ void setup() {
     return;
   }
 
-  Serial.println("Please input a direction (f,b,l,r) and a value (degrees for l,r and milliseconds for f,b). e.g. l45,f1000,etc.");
+  Serial.println("Please input a direction (f,b,l,r) and value (degrees for l,r and milliseconds for f,b) with a space in between. E.g. f 1000");
 }
 
 void loop() {
-  static String inputString = "";
-  // read and send string from serial buffer
-  if (Serial.available()) {
-    inputString = Serial.readString(); 
-    inputString.trim();
-    inputString.toCharArray(outgoingMessage.text, min(inputString.length() + 1, sizeof(outgoingMessage.text)));
+   static String inputString = "";
+   // read and send string from serial buffer
+   if (Serial.available()) {
+     inputString = Serial.readString(); 
+     inputString.trim();
 
-    esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&outgoingMessage, sizeof(outgoingMessage));
+     // split string based on spaces
+     int delimIndex = inputString.indexOf(' ');
+     String direction = inputString.substring(0, delimIndex);
+     String value = inputString.substring(delimIndex + 1);
 
-    if (result != ESP_OK) {
-      Serial.print("Send failed, error: ");
-      Serial.println(esp_err_to_name(result));
-    }
+     // create json struct and serialize
+     jsondata = "";
+     doc["direction"] = direction;
+     doc["value"] = value;
+     serializeJson(doc, jsondata);
+     Serial.println(jsondata);
+     Serial.println(sizeof(jsondata));
 
-    inputString = ""; 
+     // send message
+     esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) jsondata.c_str(), strlen(jsondata.c_str()));
+     if (result != ESP_OK) {
+       Serial.print("Send failed, error: ");
+       Serial.println(esp_err_to_name(result));
+     }
+     inputString = ""; 
   }
 }

@@ -1,4 +1,5 @@
 #include <esp_now.h>
+#include <ArduinoJson.h>
 #include <WiFi.h>
 #include "config.h"
 #include "tank_functions.h"
@@ -11,18 +12,37 @@ typedef struct struct_message {
 struct_message incomingMessage;
 struct_message myResponse;
 
+// global variables for json message
+String jsondata;
+StaticJsonDocument<64> doc;
+
 esp_now_peer_info_t peerInfo;
 uint8_t senderMacAddress[6];
 
 // Callback function executed when data is received
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-  memcpy(&incomingMessage, incomingData, sizeof(incomingMessage));
-  Serial.print("Data received: ");
-  Serial.println(incomingMessage.text);
-  
-  memcpy(senderMacAddress, mac, 6);
 
-  executeCommand(incomingMessage.text);
+  // receive json data and deserialize
+  char* buff = (char*) incomingData;       
+  jsondata = String(buff);                  
+  Serial.print("Recieved ");
+  Serial.println(jsondata);
+  DeserializationError error = deserializeJson(doc, jsondata);
+
+  memcpy(senderMacAddress, mac, 6); 
+  
+  if (!error) {
+    // read arguments and execute command
+    const char* dir = doc["direction"]; // must be const char*? Not sure why
+    char direction = dir[0];
+    int val = doc["value"]; 
+    executeCommand(direction, val);
+  }
+  else {
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(error.f_str());
+    return;
+  }
 }
 
 // Callback function executed when data is sent
@@ -61,14 +81,12 @@ void setup() {
 /* Input should be in the form of direction+value. For left and right ('l','r'), the value is the degrees. For
  * forward and backward ('f','b'), the value is the milliseconds it drives for.
  */
-void executeCommand(char* command) {
-  char direction = command[0];
-  int value = atoi(command + 1);
+void executeCommand(char direction, int value) {
   char responseMessage[128];
-
+  
   if (value == 0) {
     strncpy(responseMessage, "Error: Invalid value", sizeof(responseMessage));
-  } else {
+  } else{
     switch(direction) {
       case 'f':
         accelerateForward(value);
