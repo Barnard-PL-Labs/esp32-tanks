@@ -1,4 +1,5 @@
 // to try: 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 23, 24, 25, 26, 27, 38, 39, 40, 41, 42, 43, 51, 52
+// CM pins on case_code > camera_init
 
 int GPIO_PINS[] = {7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 23, 24, 25, 26, 27, 38, 39, 40, 41, 42, 43, 51, 52};
 size_t num_pins = sizeof(GPIO_PINS) / sizeof(GPIO_PINS[0]);
