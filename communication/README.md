@@ -18,10 +18,10 @@ Each of these functions have their own required fields:
 Example:
 
 ```json
-{
-  "function": "motor",
-  "direction": "f",
-  "value": "1000"
+{   
+    "function": "motor",
+    "direction": "f",
+    "value": "1000"
 }
 ```
 
@@ -49,6 +49,6 @@ Example:
 ```json
 {
 	"status": "success",
-	"message":
+	"message": "Motor command f1000 executed"
 }
 ```
