@@ -14,7 +14,8 @@ struct_message myResponse;
 
 // global variables for json message
 String jsondata;
-StaticJsonDocument<64> doc;
+StaticJsonDocument<96> doc;
+StaticJsonDocument<96> responseJsonDocument;
 
 esp_now_peer_info_t peerInfo;
 uint8_t senderMacAddress[6];
@@ -32,17 +33,34 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(senderMacAddress, mac, 6); 
   
   if (!error) {
-    // read arguments and execute command
-    const char* dir = doc["direction"]; // must be const char*? Not sure why
-    char direction = dir[0];
-    int val = doc["value"]; 
-    executeCommand(direction, val);
-  }
-  else {
-    Serial.print(F("deserializeJson() failed: "));
-    Serial.println(error.f_str());
-    return;
-  }
+        const char* function = doc["function"];
+        
+        if (strcmp(function, "motor") == 0) {
+            // motor function
+            const char* dir = doc["direction"];
+            char direction = dir[0];
+            int val = doc["value"]; 
+            executeMotorCommand(direction, val);
+        } else if (strcmp(function, "light") == 0) {
+            // light function
+            int val = doc["value"]; 
+            executeLightCommand(val);
+        } else if (strcmp(function, "camera") == 0) {
+            // camera function
+            // TODO: handle camera command
+        } else {
+            responseJsonDocument["status"] = "error";
+            responseJsonDocument["message"] = "Unknown function";
+            sendResponse();
+        }
+    } else {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        responseJsonDocument["status"] = "error";
+        responseJsonDocument["message"] = "Invalid JSON";
+        sendResponse();
+        return;
+    }
 }
 
 // Callback function executed when data is sent
@@ -78,14 +96,17 @@ void setup() {
   esp_now_register_recv_cb(OnDataRecv);
 }
 
+
+
 /* Input should be in the form of direction+value. For left and right ('l','r'), the value is the degrees. For
  * forward and backward ('f','b'), the value is the milliseconds it drives for.
  */
-void executeCommand(char direction, int value) {
+void executeMotorCommand(char direction, int value) {
   char responseMessage[128];
   
-  if (value == 0) {
-    strncpy(responseMessage, "Error: Invalid value", sizeof(responseMessage));
+  if (value <= 0) {
+    responseJsonDocument["status"] = "error";
+    responseJsonDocument["message"] = "Motor invalid value";
   } else{
     switch(direction) {
       case 'f':
@@ -101,17 +122,37 @@ void executeCommand(char direction, int value) {
         turnRight(value);
         break;
       default:
-        strncpy(responseMessage, "Error: Invalid direction", sizeof(responseMessage));
+        responseJsonDocument["status"] = "error";
+        responseJsonDocument["message"] = "Motor invalid direction";
+        sendResponse();
     }
-    snprintf(responseMessage, sizeof(responseMessage), "Command %c%d executed", direction, value);
+    snprintf(responseMessage, sizeof(responseMessage), "Motor command %c%d executed", direction, value);
+    responseJsonDocument["status"] = "success";
+    responseJsonDocument["message"] = responseMessage;
   }
 
   // Send response to coordinator
-  sendResponse(responseMessage);
+  sendResponse();
 }
 
-void sendResponse(char * responseMessage){
-    Serial.println(responseMessage);
+void executeLightCommand(int value) {
+  char responseMessage[128];
+  if (value < 0 || value > 255) {
+    responseJsonDocument["status"] = "error";
+    responseJsonDocument["message"] = "Light invalid value";
+  } else {
+    // TODO: implement light control
+    snprintf(responseMessage, sizeof(responseMessage), "Light command %d executed", value);
+    responseJsonDocument["status"] = "success";
+    responseJsonDocument["message"] = responseMessage;
+  }
+
+  // Send response to coordinator
+  sendResponse();
+}
+
+void sendResponse(){
+    char jsonBuffer[96];
 
     memcpy(peerInfo.peer_addr, senderMacAddress, 6); 
     peerInfo.channel = 0;  
@@ -126,11 +167,11 @@ void sendResponse(char * responseMessage){
     }
 
     // Prepare response
-    strncpy(myResponse.text, responseMessage, sizeof(myResponse.text) - 1);
-    myResponse.text[sizeof(myResponse.text) - 1] = '\0';
+    serializeJson(responseJsonDocument, jsonBuffer);
+    Serial.println(jsonBuffer);
 
     // Send Response
-    esp_err_t sendResult = esp_now_send(senderMacAddress, (uint8_t *)&myResponse, sizeof(myResponse));
+    esp_err_t sendResult = esp_now_send(senderMacAddress, (uint8_t *)jsonBuffer, strlen(jsonBuffer) + 1);
 
     // Print errors
     if (sendResult != ESP_OK) {

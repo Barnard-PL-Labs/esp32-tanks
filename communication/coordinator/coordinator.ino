@@ -12,7 +12,7 @@ struct_message outgoingMessage;
 
 // global variables for json message
 String jsondata;
-StaticJsonDocument<64> doc; // 64 computed from https://arduinojson.org/v6/assistant/
+StaticJsonDocument<96> doc; // 64 computed from https://arduinojson.org/v6/assistant/
 
 esp_now_peer_info_t peerInfo;
 
@@ -55,7 +55,7 @@ void setup() {
     return;
   }
 
-  Serial.println("Please input a direction (f,b,l,r) and value (degrees for l,r and milliseconds for f,b) with a space in between. E.g. f 1000");
+  Serial.println("Please input a command, with the function (motor, light, camera) followed by the required fields in the correct order, all separated by a space (E.g. motor f 1000):");
 }
 
 void loop() {
@@ -67,13 +67,23 @@ void loop() {
 
      // split string based on spaces
      int delimIndex = inputString.indexOf(' ');
-     String direction = inputString.substring(0, delimIndex);
-     String value = inputString.substring(delimIndex + 1);
+     String function = inputString.substring(0, delimIndex);
+     String fields = inputString.substring(delimIndex + 1);
 
      // create json struct and serialize
      jsondata = "";
-     doc["direction"] = direction;
-     doc["value"] = value;
+     doc["function"] = function;
+     if (function == "motor") {
+      doc["direction"] = fields.substring(0, 1);
+      doc["value"] = fields.substring(2).toInt(); // Convert string to integer
+    } else if (function == "light") {
+      doc["value"] = fields.toInt(); // Convert string to integer
+    } else if (function == "camera") {
+      // TODO: implement camera control
+    } else {
+      Serial.println("Invalid function");
+    }
+
      serializeJson(doc, jsondata);
      Serial.println(jsondata);
      Serial.println(sizeof(jsondata));
