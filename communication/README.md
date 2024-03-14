@@ -25,9 +25,18 @@ Example:
 }
 ```
 
-#### `light` (TBD) <a name="light"></a>
+#### `light` <a name="light"></a>
 
 - `value`: range from 0 = off to 255 = full brightness
+  
+Example:
+
+```json
+{   
+    "function": "light",
+    "value": "50"
+}
+```
 
 #### `camera` (TBD) <a name="camera"></a>
 
