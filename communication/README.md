@@ -27,7 +27,7 @@ Example:
 
 #### `light` (TBD) <a name="light"></a>
 
-- `value`: range from 0 = off to ??? = full brightness
+- `value`: range from 0 = off to 255 = full brightness
 
 #### `camera` (TBD) <a name="camera"></a>
 

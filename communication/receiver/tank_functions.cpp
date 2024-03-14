@@ -2,6 +2,20 @@
 #include <WiFi.h>
 #include "stdlib.h"
 #include "config.h"
+#include "tank_functions.h"
+
+// Light pin
+
+void initLight() {
+  ledcSetup(Headlamp_Ch, 10000, 8);
+  ledcAttachPin(Headlamp_Pin, Headlamp_Ch);
+}
+
+void adjustLight(int val) {
+  ledcWrite(Headlamp_Ch, val);
+}
+
+// Motor pins
 
 void accelerateForward(){
   analogWrite(Left_Motor_Reverse, 0);

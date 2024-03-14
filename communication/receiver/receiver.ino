@@ -80,6 +80,7 @@ void setup() {
   
   // Initialize Motor pins
   initMotors();
+  initLight();
   
   // Set ESP32 as a Wi-Fi Station and print MAC
   WiFi.mode(WIFI_STA);
@@ -142,6 +143,7 @@ void executeLightCommand(int value) {
     responseJsonDocument["message"] = "Light invalid value";
   } else {
     // TODO: implement light control
+    adjustLight(value);
     snprintf(responseMessage, sizeof(responseMessage), "Light command %d executed", value);
     responseJsonDocument["status"] = "success";
     responseJsonDocument["message"] = responseMessage;
