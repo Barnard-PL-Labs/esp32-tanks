@@ -12,15 +12,33 @@ struct_message outgoingMessage;
 
 // global variables for json message
 String jsondata;
+String incomingJsonData;
 StaticJsonDocument<96> doc; // 64 computed from https://arduinojson.org/v6/assistant/
+StaticJsonDocument<96> responseJsonDocument;
 
 esp_now_peer_info_t peerInfo;
 
 // Callback function executed when data is received
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-  memcpy(&outgoingMessage, incomingData, sizeof(outgoingMessage));
-  Serial.print("Data received: ");
-  Serial.println(outgoingMessage.text);
+  // receive json data and deserialize
+  char* buff = (char*) incomingData;       
+  incomingJsonData = String(buff);                  
+  Serial.print("Recieved Data: ");
+  DeserializationError error = deserializeJson(responseJsonDocument, incomingJsonData);
+  const char* status;
+  const char* message;
+  
+  if (!error) {
+        status = responseJsonDocument["status"];
+        message = responseJsonDocument["message"];
+        Serial.print(status);
+        Serial.print(": ");
+        Serial.println(message);
+    } else {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return;
+    }
 }
 
 // Callback function executed when data is sent
