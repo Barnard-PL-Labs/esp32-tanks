@@ -48,7 +48,7 @@ Example:
 
 ```json
 {
-	"status": "success",
-	"message": "Motor command f1000 executed"
+    "status": "success",
+    "message": "Motor command f1000 executed"
 }
 ```
