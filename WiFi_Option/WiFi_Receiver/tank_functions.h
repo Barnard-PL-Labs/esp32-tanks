@@ -1,8 +1,3 @@
-// Light control functions
-void adjustLight(int val);
-void initLight();
-
-// Motor control functions
 void accelerateForward(int duration);
 void accelerateForward();
 void forward();
