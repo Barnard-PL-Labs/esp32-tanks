@@ -11,6 +11,9 @@ const readline = require('readline').createInterface({
     output: process.stdout
 });
 
+// The commands that the bot can listen for and send to the ESP32
+const commands = {"!forward": "forward", "!right": "right", "!left": "left", "!backward": "backward", "!stop": "stop", "!ledon": "ON", "!ledoff": "OFF"};
+
 // Define your Twitch client setup and event handlers as functions
 function setupTwitchClient(port) {
     // Define configuration options
@@ -36,38 +39,15 @@ function setupTwitchClient(port) {
         const command = msg.trim();
 
         // If the command is known, let's send it to the ESP32
-        client.say(target, `Your command was: ${command}`);
-        if (command === '!dice') {
+        if (commands[command]) {
+            console.log(`* Executing ${command} command`);
+            client.say(target, `Your command was: ${command}`);
+            port.write(commands[command] + '\n'); // Sends the command to the ESP32
+        } else if (command === '!dice') {
             const num = rollDice();
             client.say(target, `You rolled a ${num}`);
-        } else if (command === '!forward') {
-            console.log(`* Executing ${command} command`);
-            port.write('forward\n'); // Sends 'forward' command to the ESP32
-        } else if (command === '!right') {
-            console.log(`* Executing ${command} command`);
-            port.write('right\n'); // Sends 'right' command to the ESP32
-        } else if (command === '!left') {
-            console.log(`* Executing ${command} command`);
-            port.write('left\n'); // Sends 'left' command to the ESP32
-        } else if (command === '!backward') {
-            console.log(`* Executing ${command} command`);
-            port.write('backward\n'); // Sends 'backward' command to the ESP32
-        } else if (command === '!stop') {
-            console.log(`* Executing ${command} command`);
-            port.write('stop\n'); // Sends 'stop' command to the ESP32
-        } else if (command === '!ledon') {
-            // Testing purpose only
-            // Displays "LED ON" on the ESP32 display
-            console.log(`* Executing ${command} command`);
-            client.say(target, `Turning LED on`);
-            port.write('ON\n'); // Sends 'ON' command to the ESP32
-        } else if (command === '!ledoff') {
-            // Testing purpose only
-            // Displays "LED OFF" on the ESP32 display
-            console.log(`* Executing ${command} command`);
-            client.say(target, `Turning LED off`);
-            port.write('OFF\n'); // Sends 'OFF' command to the ESP32
-        } else {
+        } else if (command.startsWith('!')) {
+            client.say(target, `Unknown command: ${command}`);
             console.log(`* Unknown command ${command}`);
         }
     };
