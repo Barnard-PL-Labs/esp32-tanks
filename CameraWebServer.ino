@@ -1,25 +1,21 @@
 #include "esp_camera.h"
-// #include <WiFi.h>
-//
-// WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
-//            Ensure ESP32 Wrover Module or other board with PSRAM is selected
-//            Partial images will be transmitted if image exceeds buffer size
-//
-//            You must select partition scheme from the board menu that has at least 3MB APP space.
-//            Face Recognition is DISABLED for ESP32 and ESP32-S2, because it takes up from 15 
-//            seconds to process single frame. Face Detection is ENABLED if PSRAM is enabled as well
+#include <WiFi.h>
+#include <WebServer.h>
 
 #define JSZ_MINI_ROBOT
 #include "camera_pins.h"
 
-// ===========================
-// Enter your WiFi credentials
-// ===========================
-// const char* ssid = "Columbia University";
-// const char* password = "plzworkplz";
-
-// void startCameraServer();
+void startCameraServer();
 void setupLedFlash(int pin);
+
+const char* ssid = "ESP32-test";
+const char* password = "047d08CC";
+
+// WebServer server(80);
+
+void handleRoot(){
+  Serial.println("Connection established");
+}
 
 void setup() {
   Serial.begin(115200);
@@ -47,8 +43,8 @@ void setup() {
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.frame_size = FRAMESIZE_UXGA;
-  // config.pixel_format = PIXFORMAT_JPEG; // for streaming
-  config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
+  config.pixel_format = PIXFORMAT_JPEG; // for streaming
+  // config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 12;
@@ -68,10 +64,10 @@ void setup() {
     }
   } else {
     // Best option for face detection/recognition
-    config.frame_size = FRAMESIZE_QVGA;// FRAMESIZE_240X240;
-// #if CONFIG_IDF_TARGET_ESP32S3
-//     config.fb_count = 2;
-// #endif
+    config.frame_size = FRAMESIZE_240X240;
+#if CONFIG_IDF_TARGET_ESP32S3
+    config.fb_count = 2;
+#endif
   }
 
 #if defined(CAMERA_MODEL_ESP_EYE)
@@ -115,46 +111,38 @@ void setup() {
   setupLedFlash(LED_GPIO_NUM);
 #endif
 
-  // WiFi.begin(ssid, password);
-  // WiFi.begin(ssid);
-  // WiFi.setSleep(false);
+//My Code for running server on ESP32
+//   WiFi.softAP(ssid, password);
+//   server.on("/", HTTP_GET, handleRoot);
+//   server.begin();
 
-  // while (WiFi.status() != WL_CONNECTED) {
-  //   delay(500);
-  //   Serial.print(".");
-  // }
-  // Serial.println("");
-  // Serial.println("WiFi connected");
+//   startCameraServer();
 
-  // startCameraServer();
+//   Serial.print("Camera Ready! Use '");
+//   Serial.print(WiFi.softAPIP());
+//   Serial.println("' to connect");
+// }
 
-  // Serial.print("Camera Ready! Use 'http://");
-  // Serial.print(WiFi.localIP());
-  // Serial.println("' to connect");
-  // Serial.println("Ready!");
-}
+//My Code for connecting to other server
+  WiFi.begin(ssid, password);
+  WiFi.setSleep(false);
 
-void loop() {
-  // Do nothing. Everything is done in another task by the web server
-  logPicture();
-  delay(100);
-}
-
-
-void logPicture(){
-  camera_fb_t * fb = NULL;
-  fb = esp_camera_fb_get();
-
-  if (!fb){
-    Serial.println(F("Image not captured"));
-  } else {
-    for (int i = 0; i < fb->len; i++){
-      Serial.print(fb->buf[i]);
-      Serial.print(", ");
-    }
-    Serial.println();
-    // Serial.println(fb->buf[1]);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
   }
-  esp_camera_fb_return(fb);
-  fb = NULL;
+  Serial.println("");
+  Serial.println("WiFi connected");
+
+  startCameraServer();
+
+  Serial.print("Camera Ready! Use 'http://");
+  Serial.print(WiFi.localIP());
+  Serial.println("' to connect");
+}
+
+void loop(){
+  // Do nothing. Everything is done in another task by the web server
+  // server.handleClient();
+  delay(1000);
 }

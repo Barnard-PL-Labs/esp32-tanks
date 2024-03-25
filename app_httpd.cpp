@@ -39,35 +39,6 @@
 #define CONFIG_ESP_FACE_RECOGNITION_ENABLED 0
 #endif
 
-#if CONFIG_ESP_FACE_DETECT_ENABLED
-
-#include <vector>
-#include "human_face_detect_msr01.hpp"
-#include "human_face_detect_mnp01.hpp"
-
-#define TWO_STAGE 1 /*<! 1: detect by two-stage which is more accurate but slower(with keypoints). */
-                    /*<! 0: detect by one-stage which is less accurate but faster(without keypoints). */
-
-#if CONFIG_ESP_FACE_RECOGNITION_ENABLED
-#include "face_recognition_tool.hpp"
-#include "face_recognition_112_v1_s16.hpp"
-#include "face_recognition_112_v1_s8.hpp"
-
-#define QUANT_TYPE 0 //if set to 1 => very large firmware, very slow, reboots when streaming...
-
-#define FACE_ID_SAVE_NUMBER 7
-#endif
-
-#define FACE_COLOR_WHITE 0x00FFFFFF
-#define FACE_COLOR_BLACK 0x00000000
-#define FACE_COLOR_RED 0x000000FF
-#define FACE_COLOR_GREEN 0x0000FF00
-#define FACE_COLOR_BLUE 0x00FF0000
-#define FACE_COLOR_YELLOW (FACE_COLOR_RED | FACE_COLOR_GREEN)
-#define FACE_COLOR_CYAN (FACE_COLOR_BLUE | FACE_COLOR_GREEN)
-#define FACE_COLOR_PURPLE (FACE_COLOR_BLUE | FACE_COLOR_RED)
-#endif
-
 // Enable LED FLASH setting
 #define CONFIG_LED_ILLUMINATOR_ENABLED 1
 
@@ -95,32 +66,6 @@ static const char *_STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %
 
 httpd_handle_t stream_httpd = NULL;
 httpd_handle_t camera_httpd = NULL;
-
-#if CONFIG_ESP_FACE_DETECT_ENABLED
-
-static int8_t detection_enabled = 0;
-
-// #if TWO_STAGE
-// static HumanFaceDetectMSR01 s1(0.1F, 0.5F, 10, 0.2F);
-// static HumanFaceDetectMNP01 s2(0.5F, 0.3F, 5);
-// #else
-// static HumanFaceDetectMSR01 s1(0.3F, 0.5F, 10, 0.2F);
-// #endif
-
-#if CONFIG_ESP_FACE_RECOGNITION_ENABLED
-static int8_t recognition_enabled = 0;
-static int8_t is_enrolling = 0;
-
-#if QUANT_TYPE
-    // S16 model
-    FaceRecognition112V1S16 recognizer;
-#else
-    // S8 model
-    FaceRecognition112V1S8 recognizer;
-#endif
-#endif
-
-#endif
 
 typedef struct
 {
@@ -1379,7 +1324,7 @@ void startCameraServer()
     log_i("Starting stream server on port: '%d'", config.server_port);
     if (httpd_start(&stream_httpd, &config) == ESP_OK)
     {
-        httpd_register_uri_handler(stream_httpd, &stream_uri);
+      httpd_register_uri_handler(stream_httpd, &stream_uri);
     }
 }
 
