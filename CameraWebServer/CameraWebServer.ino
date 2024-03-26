@@ -12,11 +12,13 @@ const char* ssid = "ESP32-test";
 const char* password = "047d08CC";
 const char* serverIP = "127.0.0.1";
 
-// WebServer server(80);
 WiFiClient client;
 
-void handleRoot(){
-  Serial.println("Connection established");
+void register_tank() {
+    client.println("GET /register HTTP/1.1");
+    client.println("Host: " + String(serverIP));
+    client.println("Connection: close");
+    client.println();
 }
 
 void setup() {
@@ -113,19 +115,6 @@ void setup() {
   setupLedFlash(LED_GPIO_NUM);
 #endif
 
-//My Code for running server on ESP32
-//   WiFi.softAP(ssid, password);
-//   server.on("/", HTTP_GET, handleRoot);
-//   server.begin();
-
-//   startCameraServer();
-
-//   Serial.print("Camera Ready! Use '");
-//   Serial.print(WiFi.softAPIP());
-//   Serial.println("' to connect");
-// }
-
-//My Code for connecting to other server
   WiFi.begin(ssid, password);
   WiFi.setSleep(false);
 
@@ -138,11 +127,13 @@ void setup() {
 
   startCameraServer();
 
-  Serial.print("Camera Ready! Use 'http://");
+  Serial.print("Camera Ready! Use '");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
+
   if(client.connect(serverIP, 80)){
     Serial.println("Successfully connected to server!");
+    register_tank();
   } else {
     Serial.print("Failed to connect to server");
   }

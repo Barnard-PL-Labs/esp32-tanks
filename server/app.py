@@ -1,4 +1,5 @@
 from flask import Flask, request
+import threading
 # from flask_cors import CORS
 import cv2
 from ControlFunctions import *
@@ -6,8 +7,8 @@ app = Flask(__name__)
 
 # CORS(app)
 
-def displayStream(ip):
-    url = "http://" + ip + ":81/stream"
+def displayStream(tank_ip):
+    url = f"http://{tank_ip}:81/stream"
     cap = cv2.VideoCapture(url)
 
     while True:
@@ -30,9 +31,12 @@ def displayStream(ip):
 
 @app.route('/register')
 def begin_stream():
-    print(f"Connection established! from {request.remote_addr}")
+    print(f"Connection established from {request.remote_addr}")
     displayStream(request.remote_addr)
+    reader = threading.Thread(target=displayStream, args=(request.remote_addr,))
+    reader.start()
+    return "Success", 200
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=80) # This is super insecure, but it's just a demo
+    app.run(host='127.0.0.1', port=80)
