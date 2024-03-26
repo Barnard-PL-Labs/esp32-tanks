@@ -29,4 +29,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     url = args.url
     main(url)
-    

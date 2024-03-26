@@ -19,8 +19,6 @@ __Settings__ > __Network and Internet__ > __Mobile hotspot__ > toggle the slider
 2. Copy the network name and password. These should match the _ssid_ and _password_ variables in __CameraWebServer.ino__. Change them as necessary.
     - I find it easier to just change the settings on the personal hotspot to match, rather than re-flash the code a bunch
 
-    [img ]
-
 3. Flash the __CameraWebServer.ino__ code to the ESP32 tank
 
 ## Use
