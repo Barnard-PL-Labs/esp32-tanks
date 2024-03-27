@@ -27,6 +27,7 @@ def displayStream(tank_ip):
     cap.release()
     cv2.destroyAllWindows()
     return
+    return
 
 @app.route('/register')
 def begin_stream():

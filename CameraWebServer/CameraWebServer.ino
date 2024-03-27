@@ -133,6 +133,7 @@ void setup() {
 
   if(client.connect(serverIP, 80)){
     register_tank();
+    register_tank();
     Serial.println("Successfully connected to server!");
   } else {
     Serial.print("Failed to connect to server");
