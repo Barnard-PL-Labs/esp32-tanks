@@ -1,6 +1,5 @@
 #include "esp_camera.h"
 #include <WiFi.h>
-// #include <WebServer.h>
 
 #define JSZ_MINI_ROBOT
 #include "camera_pins.h"
@@ -10,12 +9,12 @@ void setupLedFlash(int pin);
 
 const char* ssid = "ESP32-test";
 const char* password = "047d08CC";
-const char* serverIP = "127.0.0.1";
+const char* serverIP = "10.207.94.136"; // Change this to your computers IP address
 
 WiFiClient client;
 
 void register_tank() {
-    client.println("GET /register HTTP/1.1");
+    client.println("GET /register?addr=" + WiFi.localIP().toString() +" HTTP/1.1");
     client.println("Host: " + String(serverIP));
     client.println("Connection: close");
     client.println();
@@ -132,8 +131,8 @@ void setup() {
   Serial.println("' to connect");
 
   if(client.connect(serverIP, 80)){
-    Serial.println("Successfully connected to server!");
     register_tank();
+    Serial.println("Successfully connected to server!");
   } else {
     Serial.print("Failed to connect to server");
   }

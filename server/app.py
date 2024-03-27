@@ -1,4 +1,5 @@
 from flask import Flask, request
+import socket
 import threading
 # from flask_cors import CORS
 import cv2
@@ -28,15 +29,18 @@ def displayStream(tank_ip):
 
     cap.release()
     cv2.destroyAllWindows()
+    return
 
 @app.route('/register')
 def begin_stream():
-    print(f"Connection established from {request.remote_addr}")
-    displayStream(request.remote_addr)
-    reader = threading.Thread(target=displayStream, args=(request.remote_addr,))
+    tank_address = request.args.to_dict()['addr']
+    print(f"Registered: {tank_address}", flush=True)
+    # displayStream(request.remote_addr)
+    reader = threading.Thread(target=displayStream, args=(tank_address,))
     reader.start()
     return "Success", 200
 
-
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=80)
+    private_ip_addr = socket.gethostbyname(socket.gethostname())
+    print(f"\n=======================\nServer at:\n{private_ip_addr}\nEnsure that serverIP in the ESP32 code is set to this IP address\n=======================\n")
+    app.run(host=private_ip_addr, port=80)
