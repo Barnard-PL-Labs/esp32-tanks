@@ -1,12 +1,9 @@
 from flask import Flask, request
 import socket
 import threading
-# from flask_cors import CORS
 import cv2
 from ControlFunctions import *
 app = Flask(__name__)
-
-# CORS(app)
 
 def displayStream(tank_ip):
     url = f"http://{tank_ip}:81/stream"
@@ -18,7 +15,7 @@ def displayStream(tank_ip):
         if not ret:
             break
 
-        if frame[0][0][2] > 100 and (frame[0][0][0] < 100 and frame[0][0][1] < 100): # B G R
+        if frame[0][0][2] > 100 and (frame[0][0][0] < 100 and frame[0][0][1] < 100): # This is how we 
             print("Red pixel detected")
 
         cv2.imshow("Rover Stream", frame)
@@ -33,12 +30,13 @@ def displayStream(tank_ip):
 
 @app.route('/register')
 def begin_stream():
-    tank_address = request.args.to_dict()['addr']
+    tank_address = request.args.to_dict()['addr'] # This processes the request args from the tank
     print(f"Registered: {tank_address}", flush=True)
-    # displayStream(request.remote_addr)
-    reader = threading.Thread(target=displayStream, args=(tank_address,))
+
+    reader = threading.Thread(target=displayStream, args=(tank_address,)) # We want to display the stream in a separate thread
     reader.start()
-    return "Success", 200
+
+    return "Success", 200 # This is the response to the tank
 
 if __name__ == "__main__":
     private_ip_addr = socket.gethostbyname(socket.gethostname())

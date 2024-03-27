@@ -39,10 +39,11 @@ Thats it. Unless:
 - Your IP changes (this happens pretty often), in which case you just need to restart the server to find your new IP and update the code
 
 ## Next Steps
-1. ~~Create an flask server to grab the IP & automatically stream~~
-2. Merge the code with existing command functions from Network team
-2. Pythonize the existing commands so the server can run them
-3. Decide on the Navigation System (Goals, methods, etc.)
+- [x] Create an flask server to grab the IP & automatically stream
+- [ ] Merge the code with existing command functions from Network team
+- [ ] Pythonize the existing commands so the server can run them
+- [ ] Connect the flask server with UI components
+- [ ] Decide on the Navigation System (Goals, methods, etc.)
 
 ## Teams
 Network & Distributed Systems Team:

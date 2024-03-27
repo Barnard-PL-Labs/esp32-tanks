@@ -7,12 +7,14 @@
 void startCameraServer();
 void setupLedFlash(int pin);
 
-const char* ssid = "ESP32-test";
-const char* password = "047d08CC";
-const char* serverIP = "10.207.94.136"; // Change this to your computers IP address
+// Network config var (change these)
+const char* ssid = "ESP32-test"; // Your hotspot network's name
+const char* password = "047d08CC"; // Your hotspot password
+const char* serverIP = "10.207.94.136"; // The IP address from the server
 
 WiFiClient client;
 
+// Function to send localIP to server (uses GET with 'addr' param)
 void register_tank() {
     client.println("GET /register?addr=" + WiFi.localIP().toString() +" HTTP/1.1");
     client.println("Host: " + String(serverIP));
@@ -78,7 +80,7 @@ void setup() {
   pinMode(14, INPUT_PULLUP);
 #endif
 
-  // camera init
+  // Camera init
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
     Serial.println(F("Camera init failed"));
@@ -114,6 +116,7 @@ void setup() {
   setupLedFlash(LED_GPIO_NUM);
 #endif
 
+// Connect to network
   WiFi.begin(ssid, password);
   WiFi.setSleep(false);
 
@@ -126,9 +129,7 @@ void setup() {
 
   startCameraServer();
 
-  Serial.print("Camera Ready! Use '");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
+  Serial.print("Camera Ready!");
 
   if(client.connect(serverIP, 80)){
     register_tank();
