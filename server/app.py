@@ -28,15 +28,15 @@ def displayStream(tank_ip):
 
     cap.release()
     cv2.destroyAllWindows()
+    return
 
 @app.route('/register')
 def begin_stream():
-    print(f"Connection established from {request.remote_addr}")
+    print(f"Connection established from {request.remote_addr}", flush=True)
     displayStream(request.remote_addr)
     reader = threading.Thread(target=displayStream, args=(request.remote_addr,))
     reader.start()
     return "Success", 200
 
-
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=80)
+    app.run(host='0.0.0.0', port=80)
