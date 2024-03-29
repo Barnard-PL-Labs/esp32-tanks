@@ -3,11 +3,11 @@ Setup:
 -If using terminal, you may need to do:
 pip install -r requirements.txt
 
--Flash the file coordinator.ino to the coordinator board.
+-Flash the file facilitator.ino to the facilitator board.
 
--Fill out the ssid and password fields in receiver.ino and flash receiver.ino to the tank.
+-Fill out the ssid and password fields in facilitator.ino and flash tank.ino to the tank.
 
--Connect the coordinator to the PC via serial and fill out serial_port field of server.py with the coordinator's serial port name (you can find it in Arduino IDE). 
+-Connect the facilitator to the PC via serial and fill out serial_port field of server.py with the facilitator's serial port name (you can find it in Arduino IDE). 
 
 
 Running the server:
