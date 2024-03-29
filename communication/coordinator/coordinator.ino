@@ -1,89 +1,68 @@
-#include <esp_now.h>
-#include <WiFi.h>
-#include <ArduinoJson.h>
+/*
+    Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleServer.cpp
+    Ported to Arduino ESP32 by Evandro Copercini
+    updates by chegewara
+*/
 
-uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // The broadcast MAC Address
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
 
-typedef struct struct_message {
-  char text[128];
-} struct_message;
+// See the following for generating UUIDs:
+// https://www.uuidgenerator.net/
 
-struct_message outgoingMessage;
+#define SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
-// global variables for json message
-String jsondata;
-StaticJsonDocument<64> doc; // 64 computed from https://arduinojson.org/v6/assistant/
+class MyCallbacks : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    // This will be triggered every time a client writes a new value to the characteristic
+    std::string newValue = pCharacteristic->getValue();
 
-esp_now_peer_info_t peerInfo;
+    // For example, we can print the new value to the Serial
+    //Serial.print("New characteristic value: ");
+    Serial.println(newValue.c_str());  //print updated value
+  }
+};
 
-// Callback function executed when data is received
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-  memcpy(&outgoingMessage, incomingData, sizeof(outgoingMessage));
-  Serial.print("Data received: ");
-  Serial.println(outgoingMessage.text);
-}
+class MyServerCallbacks : public BLEServerCallbacks {
+  void onConnect(BLEServer *pServer) {
+    Serial.println("Client Connected");
+  }
 
-// Callback function executed when data is sent
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
-}
+  void onDisconnect(BLEServer *pServer) {
+    Serial.println("Client Disconnected");
+    // Restart advertising immediately after a disconnect
+    BLEDevice::startAdvertising();
+    Serial.println("Start advertising again");
+  }
+};
 
 void setup() {
-  // Set up Serial Monitor
   Serial.begin(115200);
+  Serial.println("Starting BLE work!");
 
-  // Set ESP32 as a Wi-Fi Station and print MAC
-  WiFi.mode(WIFI_STA);
-  Serial.println(WiFi.macAddress());
+  BLEDevice::init("Long name works now");
+  BLEServer *pServer = BLEDevice::createServer();
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+    CHARACTERISTIC_UUID,
+    BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 
-  if (esp_now_init() != ESP_OK) {
-    Serial.println("Error initializing ESP-NOW");
-    return;
-  }
+  pCharacteristic->setValue("Hello World says Neil"); // Thanks for the example code, Neil
+  pService->start();
+  // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
+  pAdvertising->setMinPreferred(0x12);
+  BLEDevice::startAdvertising();
 
-  // Register callback functions
-  esp_now_register_send_cb(OnDataSent);
-  esp_now_register_recv_cb(OnDataRecv);
-
-  // Add broadcast MAC to peers
-  memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-  peerInfo.channel = 0;  
-  peerInfo.encrypt = false;
-  
-  if (esp_now_add_peer(&peerInfo) != ESP_OK){
-    Serial.println("Failed to add peer");
-    return;
-  }
-
-  Serial.println("Please input a direction (f,b,l,r) and value (degrees for l,r and milliseconds for f,b) with a space in between. E.g. f 1000");
+  pCharacteristic->setCallbacks(new MyCallbacks());
+  pServer->setCallbacks(new MyServerCallbacks());
+  Serial.println("Setup complete. Waiting for connections.");
 }
 
 void loop() {
-   static String inputString = "";
-   // read and send string from serial buffer
-   if (Serial.available()) {
-     inputString = Serial.readString(); 
-     inputString.trim();
-
-     // split string based on spaces
-     int delimIndex = inputString.indexOf(' ');
-     String direction = inputString.substring(0, delimIndex);
-     String value = inputString.substring(delimIndex + 1);
-
-     // create json struct and serialize
-     jsondata = "";
-     doc["direction"] = direction;
-     doc["value"] = value;
-     serializeJson(doc, jsondata);
-     Serial.println(jsondata);
-     Serial.println(sizeof(jsondata));
-
-     // send message
-     esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) jsondata.c_str(), strlen(jsondata.c_str()));
-     if (result != ESP_OK) {
-       Serial.print("Send failed, error: ");
-       Serial.println(esp_err_to_name(result));
-     }
-     inputString = ""; 
-  }
 }

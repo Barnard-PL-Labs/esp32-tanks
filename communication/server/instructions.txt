@@ -1,0 +1,26 @@
+Setup:
+
+-If using terminal, you may need to do:
+pip install -r requirements.txt
+
+-Flash the file coordinator.ino to the coordinator board.
+
+-Fill out the ssid and password fields in receiver.ino and flash receiver.ino to the tank.
+
+-Connect the coordinator to the PC via serial and fill out serial_port field of server.py with the coordinator's serial port name (you can find it in Arduino IDE). 
+
+
+Running the server:
+
+-Run the server:
+python server.py
+
+-Turn on the tank. It may take a moment to connect to WiFi. The tank's headlights will blink twice if the connection was successful.
+
+-If the server asks for the mac_address of your tank, copy the mac address from the terminal and add it as a key to mac_addresses with "tank_#" as the value. Restart this process.
+
+
+Notes:
+-Make sure the serial monitor for this port isn't open in Arduino IDE.
+-The server has to be restarted to reconnect the tank (i.e if you shut the tank off). If the server isn't connecting to the tank, try restarting it. You can also plug the tank into the serial to see if there's an error.
+-Don't forget to clear your network password before pushing to GitHub.
