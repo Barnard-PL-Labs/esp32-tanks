@@ -1,68 +1,68 @@
-#include <WiFi.h>
-#include <WebServer.h>
+/*
+    Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleServer.cpp
+    Ported to Arduino ESP32 by Evandro Copercini
+    updates by chegewara
+*/
 
-const char* ssid = "ESP32-Access-Point";
-const char* password = "123456789";
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
 
-WebServer server(80);
+// See the following for generating UUIDs:
+// https://www.uuidgenerator.net/
 
-String command = ""; // This will store the most recent command
+#define SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
-void handleRoot() {
-  String html = "<html><body>"
-                "<h1>ESP32 Tank Control</h1>"
-                "<form id='tankForm'>"
-                "Directions: (f, b, l, r): <input type='text' name='direction' id='direction'><br>"
-                "Value: <input type='text' name='value' id='value'><br>"
-                "<input type='button' value='Submit' onclick='submitForm()'>"
-                "</form>"
-                "<script>"
-                "function submitForm() {"
-                "  var direction = document.getElementById('direction').value;"
-                "  var value = document.getElementById('value').value;"
-                "  var xhr = new XMLHttpRequest();"
-                "  xhr.open('POST', '/command', true);"
-                "  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');"
-                "  xhr.send('direction=' + direction + '&value=' + value);"
-                "  xhr.onload = function() {"
-                "    alert('Command sent: ' + direction + ' ' + value);"
-                "    document.getElementById('tankForm').reset();"
-                "  };"
-                "}"
-                "</script>"
-                "</body></html>";
-  server.send(200, "text/html", html);
-}
+class MyCallbacks : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    // This will be triggered every time a client writes a new value to the characteristic
+    std::string newValue = pCharacteristic->getValue();
 
-void handleCommand() {
-  if (server.hasArg("direction") && server.hasArg("value")) {
-    command = server.arg("direction") + " " + server.arg("value");
-    Serial.println("New command: " + command);
-    server.send(200, "text/plain", command);
-  } else {
-    server.send(200, "text/plain", "Invalid command");
+    // For example, we can print the new value to the Serial
+    //Serial.print("New characteristic value: ");
+    Serial.println(newValue.c_str());  //print updated value
   }
-}
+};
 
-void handleCheckCommand() {
-  server.send(200, "text/plain", command);
-  command = ""; // Clear the command after sending
-}
+class MyServerCallbacks : public BLEServerCallbacks {
+  void onConnect(BLEServer *pServer) {
+    Serial.println("Client Connected");
+  }
+
+  void onDisconnect(BLEServer *pServer) {
+    Serial.println("Client Disconnected");
+    // Restart advertising immediately after a disconnect
+    BLEDevice::startAdvertising();
+    Serial.println("Start advertising again");
+  }
+};
 
 void setup() {
   Serial.begin(115200);
-  WiFi.softAP(ssid, password);
-  Serial.println("AP IP address: ");
-  Serial.println(WiFi.softAPIP());
+  Serial.println("Starting BLE work!");
 
-  server.on("/", HTTP_GET, handleRoot);
-  server.on("/command", HTTP_POST, handleCommand);
-  server.on("/check-command", HTTP_GET, handleCheckCommand);
-  server.begin();
+  BLEDevice::init("Long name works now");
+  BLEServer *pServer = BLEDevice::createServer();
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+    CHARACTERISTIC_UUID,
+    BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+
+  pCharacteristic->setValue("Hello World says Neil"); // Thanks for the example code, Neil
+  pService->start();
+  // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
+  pAdvertising->setMinPreferred(0x12);
+  BLEDevice::startAdvertising();
+
+  pCharacteristic->setCallbacks(new MyCallbacks());
+  pServer->setCallbacks(new MyServerCallbacks());
+  Serial.println("Setup complete. Waiting for connections.");
 }
 
 void loop() {
-  server.handleClient();
 }
-
-
