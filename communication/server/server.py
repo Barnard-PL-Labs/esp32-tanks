@@ -1,6 +1,8 @@
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 import requests
 import serial
+# Need to install flask CORs
+from flask_cors import CORS
 
 # Enter the serial port that the coordinator is connected to. EG 'COM1' or "/dev/tty...".
 # Make sure the serial port isn't being actively read in Arduino IDE
@@ -22,16 +24,21 @@ connected_tanks = []  # A list for easy tracking of the tank names that are conn
 baud_rate = 115200
 
 app = Flask(__name__)
-
+# Enable CORS for all routes and default options
+# This CORS might be overkill and possible to tone it down not sure
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 #  Reads the coordinator's serial messages. It's looking for a message in the form of "mac_address*ip_address" that
 #  the coordinator forwards from the tank. The tank lights should blink twice when it first connects. It will
 #  instruct you to hard code your tank's mac address if it isn't already included in mac_addresses. Do that, please.
+
+
 def connect_tank():
     ser = serial.Serial(serial_port, baud_rate)
     print("[Server] Waiting for tank connection...")
     while True:
-        line = ser.readline().decode().strip()  # This serial reader is a blocking function
+        # This serial reader is a blocking function
+        line = ser.readline().decode().strip()
 
         if line:
             print("[Coordinator] " + line)
@@ -52,7 +59,8 @@ def connect_tank():
                     connected_tanks.append(mac_addresses[mac])
                     break
                 else:
-                    print(f"[Server] Please assign {mac} to a tank in mac_addresses.")
+                    print(
+                        f"[Server] Please assign {mac} to a tank in mac_addresses.")
                     return
 
 
@@ -68,7 +76,20 @@ def send_commands(command):
         print("[Server] Response Text:", response.text)
 
 
+@app.route('/command', methods=['POST'])  # Receive commands from the twitchBot
+def receive_command():
+    data = request.json  # The data being sent is in json format
+    command = data['command']
+    print(f"Received command: {command}")
+
+    # Call send_commands function to pass the commands to the tank(s)
+    send_commands(command)
+
+    return jsonify({"status": "success", "message": "Command processed"}), 200
+
 #  For typing commands manually. Mainly for testing.
+
+
 def input_commands():
     print("[Server] Enter tank command. Enter \"stop\" to end.")
 
@@ -80,8 +101,9 @@ def input_commands():
 
 
 if __name__ == '__main__':
-    connect_tank()
-    input_commands()
+    # connect_tank()
+    # input_commands()
 
     # start a flask server
-    app.run(debug=True)
+    # note that I changed the port, I had something using 5000 already on my own computer
+    app.run(debug=True, port=8080)

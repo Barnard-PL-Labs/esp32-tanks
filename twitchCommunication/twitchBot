@@ -1,0 +1,46 @@
+// You might need to install npm and the axios library  via terminal or command depending on if using mac or windows
+// Also might need to install Flask-Cors to handle error with communicating 
+// via pip install flask-cors
+
+const tmi = require('tmi.js');
+const axios = require('axios');
+// Valid commands to pass to the flask server 
+const commands = {"!forward": "f", "!right": "r", "!left": "l", "!back": "b"}
+
+// Set up the bot
+const client = new tmi.Client({
+    identity: {
+        username: 'MyUserName', // Needs a valid twitch username/account, can be one set up specifically for the bot apparently
+        password: 'oauth:SeeTheCommentThenPutThePasswordHere'  // You can generate a token using 
+                                                          // the Twitch Chat OAuth Password Generator: https://twitchapps.com/tmi/
+    },
+    channels: [ 'MyChannel(ProbablyTheSameAsMyUserNameIfUsingSameAccountForBoth)' ] // Whichever channel is being used, 
+                                // and not the full address, but just the username like 
+                                // shroud or your own personal username 
+                               
+});
+
+client.connect();
+
+client.on('message', (channel, tags, message, self) => {
+    // Ignore echoed messages
+    if(self) return;
+    const commandKey = message.toLowerCase();  // Convert the message to lowercase
+    console.log(commandKey)
+    if(commandKey in commands) {
+        // Send to Flask server's endpoint
+        // Can change as needed, but I had to switch to 8080 because apparently something on my computer 
+        // was already using port 5000
+        axios.post('http://localhost:8080/command', {
+            command: commands[commandKey] 
+        })
+        .then(response => {
+            // Handle response
+            console.log(response.data);
+        })
+        .catch(error => {
+            // Handle error
+            console.error(error);
+        });
+    }
+});
