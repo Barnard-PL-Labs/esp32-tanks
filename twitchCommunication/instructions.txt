@@ -1,0 +1,16 @@
+Setting up Twitch Bot for the first time:
+
+- Go to this site: https://twitchapps.com/tmi/ and create an account for the bot. 
+- Once you have created your account, you should have received a token. Paste this token into the 'password' field
+- Paste your username into the 'username' field and inside the 'channels' field
+- Ensure you have tmi and axios installed
+- Make sure the server is running and the tank is connected (see instructions.txt in the server directory)
+- Run the bot: node twitchBot
+- go to twitch.tv/<username> in your browser and enter in to the chatbox one of the following commands:
+    - "!forward <value>"
+    - "!back <value>"
+    - "!left <value>"
+    - "!right <value>"
+    - "!blink <value>" 
+    - "!light <value>" (this changes the brightness of the headlamp)
+- if everything is working, the tank should run your command!

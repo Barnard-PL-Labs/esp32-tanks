@@ -28,6 +28,7 @@ void stop();
 
 // Headlamp Functions
 void blinkHeadlamp(int num);
+void changeHeadlamp(int num);
 
 void handleBlink();
 

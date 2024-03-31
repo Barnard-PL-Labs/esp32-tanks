@@ -167,8 +167,24 @@ void stop() {
   rightMotorStop();
 }
 
-void executeCommand(char direction, int value) {
-  switch (direction) {
+/******* Headlamp Functions ******/
+
+// use for easy physical feedback
+void blinkHeadlamp(int num) {
+  for (int i = 0; i < num; i++) {
+    analogWrite(Headlamp_Pin, 255);
+    delay(150);
+    analogWrite(Headlamp_Pin, 0);
+    delay(150);
+  }
+}
+
+void changeHeadlamp(int num){
+  analogWrite(Headlamp_Pin, num);
+}
+
+void executeCommand(char function, int value) {
+  switch (function) {
     case 'f':
       accelerateForward(value);
       break;
@@ -181,20 +197,12 @@ void executeCommand(char direction, int value) {
     case 'r':
       turnRight(value);
       break;
+    case 'h':
+      blinkHeadlamp(value);
+    case 'c':
+      changeHeadlamp(value);
     default:
       Serial.println("Invalid Command");
-  }
-}
-
-/******* Headlamp Functions ******/
-
-// use for easy physical feedback
-void blinkHeadlamp(int num) {
-  for (int i = 0; i < num; i++) {
-    analogWrite(Headlamp_Pin, 255);
-    delay(150);
-    analogWrite(Headlamp_Pin, 0);
-    delay(150);
   }
 }
 
@@ -209,8 +217,9 @@ void checkForServerIP() {
   }
 }
 
-//Input should be in the form of direction+value. For left and right ('l','r'), the value is the degrees. For
-// forward and backward ('f','b'), the value is the milliseconds it drives for.
+//Input should be in the form of function+value. For left and right ('l','r'), the value is the degrees. For
+// forward and backward ('f','b'), the value is the milliseconds it drives for. For 'h' (for blinking) value 
+// is how many times to blink.  For 'c' (changing headlamp) value is how bright to set headlamp
 void handleCommand() {
   checkForServerIP();
   String command = server.arg("command");

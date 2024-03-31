@@ -9,7 +9,8 @@ from flask_cors import CORS
 serial_port = 'YOUR_SERIAL_PORT'
 
 mac_addresses = {  # Where we should store all the tank mac addresses permanently
-    "48:27:E2:91:A5:BC": "tank_1"
+    "48:27:E2:91:A5:BC": "tank_1",
+    "48:27:E2:91:A5:94": "tank_2"
 }
 
 tank_addresses = {  # Maps the IP to the tank's name after it connects
@@ -51,8 +52,8 @@ def connect_tank():
                     print(f"[Server] connecting to {mac_addresses[mac]}.")
 
                     # make headlight blink twice when it connects
-                    url = f'http://{ip}/blink'
-                    data = {'num': 2}
+                    url = f'http://{ip}/command'
+                    data = {'command': 'h 2'}
                     response = requests.post(url, data=data)
 
                     tank_addresses[mac_addresses[mac]] = ip
@@ -78,8 +79,16 @@ def send_commands(command):
 
 @app.route('/command', methods=['POST'])  # Receive commands from the twitchBot
 def receive_command():
-    data = request.json  # The data being sent is in json format
-    command = data['command']
+    # extract json message, parse command, send it
+    data = request.json 
+
+    # check value is greater than 0 (negative values result in unexpected tank behavior)
+    if int(data['value']) < 0:
+        return jsonify({"status": "failed", "message": "invalid value"}), 400
+    
+    # extract function and construct command based on that function and value
+    command = data['function'] + " " + str(data['value'])
+    
     print(f"Received command: {command}")
 
     # Call send_commands function to pass the commands to the tank(s)
@@ -88,8 +97,6 @@ def receive_command():
     return jsonify({"status": "success", "message": "Command processed"}), 200
 
 #  For typing commands manually. Mainly for testing.
-
-
 def input_commands():
     print("[Server] Enter tank command. Enter \"stop\" to end.")
 
@@ -101,7 +108,7 @@ def input_commands():
 
 
 if __name__ == '__main__':
-    # connect_tank()
+    connect_tank()
     # input_commands()
 
     # start a flask server
