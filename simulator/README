@@ -1,0 +1,16 @@
+# Simulator
+
+This simulator demonstrates the abstracted design goals of the ESP32 tank testbed platform.
+
+## Tile Types
+
+- **Green Arrows**: Tanks, indicating direction. The red outline indicates the active tank.
+- **Black and Red Tiles**: Gates and light sensors, respectively. If a tank's headlights are pointed at a light sensor, the gate will open.
+- **Yellow Tile**: Goal state. Try to get any tank to this tile.
+
+## Controls
+
+- **S**: Switch the currently active tank you control.
+- **Up Arrow**: Move tank forward.
+- **Left/Right Arrows**: Rotate.
+- **Spacebar**: Turn headlights on/off.
