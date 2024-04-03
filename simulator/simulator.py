@@ -165,11 +165,13 @@ while True:
         
         points = direction_points[rover.direction]
         pygame.draw.polygon(screen, fill_color, points)
+
+        # Draw headlights
+        rover.draw_headlights()
+    
         if outline_color:
             pygame.draw.polygon(screen, outline_color, points, outline_thickness)
 
-            # Draw headlights
-            rover.draw_headlights()
             
             # Check light sensors for each rover
                     # Check light sensors for each rover
