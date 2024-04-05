@@ -1,0 +1,16 @@
+{
+    "name": "my-twitch_bot",
+    "version": "1.0.0",
+    "description": "A Twitch bot for handling commands",
+    "main": "index.js",
+    "scripts": {
+      "start": "node index.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "axios": "^0.21.1",
+      "tmi.js": "^1.7.1"
+    }
+  }
+  
