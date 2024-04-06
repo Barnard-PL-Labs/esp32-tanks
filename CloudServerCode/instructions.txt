@@ -1,0 +1,16 @@
+Start with the tank and fill out your current WiFi in tank.ino
+Flash the tank with tank.ino
+I recommend running twitchBot.js locally instead of on the VM
+Much much easier to troubleshoot and still works
+Go to twitchBot and fill out the username password and channel portions 
+Open your terminal or equivalent
+Put this command to ssh into the VM: (idk if the commands are different on windows)
+ssh root@159.203.73.83
+Password: ESP32tanks
+then: "cd esp32-tanks"
+"cd CloudServerCode"
+"source venv/bin/activate" (this activates the virtual environment)
+"python3 server.py"
+then run your twitchBot code
+turn on the tank
+Type your commands into the twitch channel chat 
