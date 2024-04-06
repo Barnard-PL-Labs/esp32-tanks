@@ -1,0 +1,18 @@
+Start with the tank and fill out your current WiFi in tank.ino
+Flash the tank with tank.ino
+I recommend running twitchBot.js locally instead of on the VM
+Much easier to troubleshoot
+Go to twitchBot.js file and fill out the username password and channel portions 
+Open your terminal or equivalent
+Access the VM with the username and password provided in the discord channel
+then run these commands: "cd esp32-tanks"
+"cd CloudServerCode"
+"source venv/bin/activate" (this activates the virtual environment)
+"python3 server.py" (you should see statements in the terminal indicating it's runnning)
+then run your twitchBot code
+turn on the tank
+Type your commands into the twitch channel chat 
+Tank, flask server, and twitchBot all have print statements in them for debugging purposes
+If you're not sure if the issue is the tank or tank code, keep it plugged in and watch the serial monitor
+Likewise for the flask server and twitchBot. Keep them open and you should be able to narrow down which
+is having problems by watching for print statements
