@@ -14,11 +14,11 @@ const commands = {
 // Set up the bot
 const client = new tmi.Client({
     identity: {
-        username: 'jvthelegend', // Needs a valid twitch username/account, can be one set up specifically for the bot apparently
-        password: 'oauth:bdh153awnvmyqn4f929nlf02kcpqc2'  // You can generate a token using 
+        username: 'MyUsername', // Needs a valid twitch username/account, can be one set up specifically for the bot apparently
+        password: 'MyPassword'  // You can generate a token using 
                                                           // the Twitch Chat OAuth Password Generator: https://twitchapps.com/tmi/
     },
-    channels: [ 'jvthelegend' ] // Whichever channel is being used, 
+    channels: [ 'MyChannel' ] // Whichever channel is being used, 
                                 // and not the full address, but just the username like 
                                 // shroud or your own personal username 
 });

@@ -7,11 +7,10 @@
 #include <HTTPClient.h>
 
 
-const char* ssid = "MyWiFi";  // Enter the name of your WiFi
+const char* ssid = "";  // Enter the name of your WiFi
 const char* password = "";       // Enter WiFi password. Leave empty if none
 
-String serverIP = "http://192.168.1.41:8080";  // My current local IP for testing, if I forget to change this I think the 
-                                              // virtual machine will have its own
+String serverIP = "http://159.203.73.83:8080";  // The VM's IP address 
 
 WebServer server(80);
 
