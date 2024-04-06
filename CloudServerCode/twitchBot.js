@@ -15,7 +15,7 @@ const commands = {
 const client = new tmi.Client({
     identity: {
         username: 'jvthelegend', // Needs a valid twitch username/account, can be one set up specifically for the bot apparently
-        password: 'oauth:q4uafa8yfqxayog0n29qnqc9om2r44'  // You can generate a token using 
+        password: 'oauth:bdh153awnvmyqn4f929nlf02kcpqc2'  // You can generate a token using 
                                                           // the Twitch Chat OAuth Password Generator: https://twitchapps.com/tmi/
     },
     channels: [ 'jvthelegend' ] // Whichever channel is being used, 
@@ -36,7 +36,7 @@ client.on('message', (channel, tags, message, self) => {
         const command = commands[commandKey];
         command.value = commandValue.toString(); // Set the value in the command object
         console.log("sending")
-        axios.post('http://localhost:8080/command', command)
+        axios.post('http://159.203.73.83:8080/command', command)
         .then(response => {
             // Handle response
             console.log(response.data);
