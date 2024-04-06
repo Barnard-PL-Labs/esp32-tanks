@@ -1,6 +1,3 @@
-// You might need to install npm and the axios library  via terminal or command depending on if using mac or windows
-// Also might need to install Flask-Cors to handle error with communicating 
-// via pip install flask-cors
 
 const tmi = require('tmi.js');
 const axios = require('axios');
@@ -17,11 +14,11 @@ const commands = {
 // Set up the bot
 const client = new tmi.Client({
     identity: {
-        username: 'MyUserName', // Needs a valid twitch username/account, can be one set up specifically for the bot apparently
-        password: 'MyPassword'  // You can generate a token using 
+        username: 'jvthelegend', // Needs a valid twitch username/account, can be one set up specifically for the bot apparently
+        password: 'oauth:q4uafa8yfqxayog0n29qnqc9om2r44'  // You can generate a token using 
                                                           // the Twitch Chat OAuth Password Generator: https://twitchapps.com/tmi/
     },
-    channels: [ 'MyChannel' ] // Whichever channel is being used, 
+    channels: [ 'jvthelegend' ] // Whichever channel is being used, 
                                 // and not the full address, but just the username like 
                                 // shroud or your own personal username 
 });
