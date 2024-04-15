@@ -1,8 +1,7 @@
-Start with the tank and fill out your current WiFi in tank.ino
-<<<<<<< HEAD
+Start with the tank and fill out your current WiFi in tankWithCamera.ino
 Might also want to change the server if you're running it locally as opposed to on the VM
 a quick way to find what the serverIP and serverName should be set to is just run the flask server, the terminal will output it 
-Flash the tank with tank.ino
+Flash the tank with tankWithCamera.ino
 Go to twitchBot.js and fill out the username password and channel portions
 for streaming on the tank:
 
@@ -30,22 +29,3 @@ and stream, it slows down a lot
 
 The websocket code has been left in both the server and tank.ino
 index.html is the html page that is supposed to display it 
-=======
-Flash the tank with tank.ino
-I recommend running twitchBot.js locally instead of on the VM
-Much easier to troubleshoot
-Go to twitchBot.js file and fill out the username password and channel portions 
-Open your terminal or equivalent
-Access the VM with the username and password provided in the discord channel
-then run these commands: "cd esp32-tanks"
-"cd CloudServerCode"
-"source venv/bin/activate" (this activates the virtual environment)
-"python3 server.py" (you should see statements in the terminal indicating it's runnning)
-then run your twitchBot code
-turn on the tank
-Type your commands into the twitch channel chat 
-Tank, flask server, and twitchBot all have print statements in them for debugging purposes
-If you're not sure if the issue is the tank or tank code, keep it plugged in and watch the serial monitor
-Likewise for the flask server and twitchBot. Keep them open and you should be able to narrow down which
-is having problems by watching for print statements
->>>>>>> 1d3ddbd73dcb337a215e5f702a58c09902702100
