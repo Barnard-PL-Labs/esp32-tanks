@@ -1,16 +1,31 @@
 Start with the tank and fill out your current WiFi in tank.ino
+Might also want to change the server if you're running it locally as opposed to on the VM
+a quick way to find what the serverIP and serverName should be set to is just run the flask server, the terminal will output it 
 Flash the tank with tank.ino
-I recommend running twitchBot.js locally instead of on the VM
-Much much easier to troubleshoot and still works
-Go to twitchBot and fill out the username password and channel portions 
+Go to twitchBot.js and fill out the username password and channel portions
+for streaming on the tank:
+
 Open your terminal or equivalent
-Put this command to ssh into the VM: (idk if the commands are different on windows)
-ssh root@159.203.73.83
-Password: ESP32tanks
+SSH into the VM with the username and password provided in the discord channel
 then: "cd esp32-tanks"
 "cd CloudServerCode"
 "source venv/bin/activate" (this activates the virtual environment)
-"python3 server.py"
-then run your twitchBot code
+"python3 server.py" (you should see statements in the terminal indicating it's runnning)
+
+otherwise: 
+run the python server as normal on your IDE of choice 
+
+then run the twitchBot code
 turn on the tank
 Type your commands into the twitch channel chat 
+
+The current way I'm streaming is through OBS, download it if thats your intention
+Add a source and add the current server IP as the url 
+for example, when using the VM to stream, the source is 45.55.200.204:5001/video
+otherwise find your IP by running the server locally and using what the terminal says is it's IP 
+I've tried ffmpeg a lot, and it hasn't worked nearly as well for streaming purposes
+I think due to its encoding. It runs "well" (loosely) locally, but once you have to convert
+and stream, it slows down a lot
+
+The websocket code has been left in both the server and tank.ino
+index.html is the html page that is supposed to display it 
