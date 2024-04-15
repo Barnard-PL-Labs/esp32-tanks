@@ -162,6 +162,21 @@ void stop() {
   rightMotorStop();
 }
 
+/******* Headlamp Functions ******/
+
+void blinkHeadlamp(int num) {
+   for (int i = 0; i < num; i++) {
+     analogWrite(Headlamp_Pin, 255);
+     delay(150);
+     analogWrite(Headlamp_Pin, 0);
+     delay(150);
+   }
+ }
+
+ void changeHeadlamp(int num){
+   analogWrite(Headlamp_Pin, num);
+ }
+
 void executeCommand(char direction, int value) {
   switch (direction) {
     case 'f':
@@ -176,20 +191,12 @@ void executeCommand(char direction, int value) {
     case 'r':
       turnRight(value);
       break;
+    case 'h':
+       blinkHeadlamp(value);
+    case 'c':
+       changeHeadlamp(value);
     default:
       Serial.println("Invalid Command");
-  }
-}
-
-/******* Headlamp Functions ******/
-
-// use for easy physical feedback
-void blinkHeadlamp(int num) {
-  for (int i = 0; i < num; i++) {
-    analogWrite(Headlamp_Pin, 255);
-    delay(150);
-    analogWrite(Headlamp_Pin, 0);
-    delay(150);
   }
 }
 
