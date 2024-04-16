@@ -8,6 +8,7 @@ import base64
 
 # Save commands from the twitchBot here, to be sent to the tanks
 readyCommands = []
+maxCommands = 10
 
 app = Flask(__name__)
 # Enable CORS for all routes and default options
@@ -19,17 +20,25 @@ lock = threading.Lock()
 
 @app.route('/command', methods=['POST'])  # Receive commands from the twitchBot
 def receive_command():
-    # extract json message, parse command, send it
+    # Extract json message, parse command, send it
     data = request.json
-    # check value is greater than 0 (negative values result in unexpected tank behavior)
+    # Check value is greater than 0 (negative values result in unexpected tank behavior)
     if int(data['value']) < 0:
         return jsonify({"status": "failed", "message": "invalid value"}), 400
 
-    # extract function and construct command based on that function and value
+    # Extract function and construct command based on that function and value
     command = data['function'] + " " + str(data['value'])
 
     print(f"Received command: {command}")
-    readyCommands.append(command) # Add the valid command to the stack
+
+    # Ensure command list doesn't get too long
+    if len(readyCommands) >= maxCommands:
+        readyCommands.pop(0) # remove oldest command
+
+    # Adds command and an empty list to keep track of which tanks
+    # have ran the command, and which tanks still need to
+    readyCommands.append({'command': command, 'executed_by': []})
+
     return jsonify({"status": "success", "message": "Command processed"}), 200
 
 # End point for tanks to "listen" to and take commands from
@@ -37,13 +46,14 @@ def receive_command():
 
 @app.route('/get-command', methods=['GET'])
 def send_command():
-    if readyCommands:
-        # Pop the first command from the list to send it to the ESP32
-        command = readyCommands.pop(0)
-        return jsonify({"command": command}), 200
-    else:
-        # If there are no commands, return a 'no command' status
-        return jsonify({"status": "no command"}), 204
+    tank_ip = request.remote_addr # Get the ip of tank
+    # Iterate through the commands to see which command to run
+    for command_info in readyCommands:
+        if tank_ip not in command_info["executed_by"]:
+            command_info["executed_by"].append(tank_ip)
+            return jsonify({"command": command_info["command"]}), 200
+    # If there are no commands, return no command status
+    return jsonify({"status": "no command"}), 204
 
 @app.route('/upload', methods=['POST'])
 def upload():
