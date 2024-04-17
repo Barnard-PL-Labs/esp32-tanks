@@ -1,4 +1,5 @@
 Start with the tank and fill out your current WiFi in tankWithCamera.ino
+Set tankID to unique value in serverName variable (this is the ID you use in twitch commands)
 Might also want to change the server if you're running it locally as opposed to on the VM
 a quick way to find what the serverIP and serverName should be set to is just run the flask server, the terminal will output it 
 Flash the tank with tankWithCamera.ino
@@ -29,21 +30,3 @@ and stream, it slows down a lot
 
 The websocket code has been left in both the server and tank.ino
 index.html is the html page that is supposed to display it 
-
-
-Setting up Twitch Bot for the first time:
-
- - Go to this site: https://twitchapps.com/tmi/ and create an account for the bot. 
- - Once you have created your account, you should have received a token. Paste this token into the 'password' field
- - Paste your username into the 'username' field and inside the 'channels' field
- - Ensure you have tmi and axios installed
- - Make sure the server is running and the tank is connected (see instructions.txt in the server directory)
- - Run the bot: node twitchBot
- - go to twitch.tv/<username> in your browser and enter in to the chatbox one of the following commands:
-     - "!forward <value>"
-     - "!back <value>"
-     - "!left <value>"
-     - "!right <value>"
-     - "!blink <value>" 
-     - "!light <value>" (this changes the brightness of the headlamp)
- - if everything is working, the tank should run your command!

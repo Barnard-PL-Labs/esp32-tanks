@@ -3,12 +3,12 @@ const tmi = require('tmi.js');
 const axios = require('axios');
 // Valid commands to pass to the flask server 
 const commands = {
-    "!forward": { function: "f", value: "" },
-    "!right": { function: "r", value: "" },
-    "!left": { function: "l",  value: "" },
-    "!back": { function: "b", value: "" },
-    "!light": { function: "c", value: ""},
-    "!blink": { function: "h", value: "" },
+    "!forward": { function: "f", tankID: "", value: "" },
+    "!right": { function: "r", tankID: "", value: "" },
+    "!left": { function: "l",  tankID: "", value: "" },
+    "!back": { function: "b", tankID: "", value: "" },
+    "!light": { function: "c", tankID: "", value: "" },
+    "!blink": { function: "h", tankID: "", value: "" },
 };
 
 // Set up the bot
@@ -30,13 +30,16 @@ client.on('message', (channel, tags, message, self) => {
     if(self) return;
     const commandParts = message.split(' '); // split message
     const commandKey = commandParts[0].toLowerCase(); // get command
-    const commandValue = parseInt(commandParts[1]); // get value
+    const tankToRun = commandParts[1]; // get tankID to run command on
+    const commandValue= parseInt(commandParts[2]); // get value
+    
 
     if(commandKey in commands && !isNaN(commandValue)) {
         const command = commands[commandKey];
         command.value = commandValue.toString(); // Set the value in the command object
+        command.tankID = tankToRun
         console.log("sending")
-        axios.post('http://159.203.73.83:8080/command', command)
+        axios.post('http://45.55.200.204:5001/command', command)
         .then(response => {
             // Handle response
             console.log(response.data);

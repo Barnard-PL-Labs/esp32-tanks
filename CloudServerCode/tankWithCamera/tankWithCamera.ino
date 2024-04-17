@@ -14,7 +14,8 @@ const char* ssid = "Columbia University";  // Enter the name of your WiFi
 const char* password = "";       // Enter WiFi password. Leave empty if none
 const char* serverIP = "http://45.55.200.204:5001/upload"; // if I forget to change this, this should be the VM IP
                                                             // so "http://45.55.200.204:8080/upload" 
-String serverName = "http://45.55.200.204:5001/get-command"; // same as severIP, this is a string for the checkForCommands function usage
+// added tankID to end of this request, CHANGE FOR EACH TANK
+String serverName = "http://45.55.200.204:5001/get-command?tankID=1"; // same as severIP, this is a string for the checkForCommands function usage
 // const char* websocket_server = "ws://192.168.1.41:5001/"; // IP address, i.e.  ws://192.168.1.100:5001
 // using namespace websockets;
 

@@ -10,6 +10,9 @@ import base64
 readyCommands = []
 maxCommands = 10
 
+# List to keep track of tanks sending GET requests
+tankIDs = []
+
 app = Flask(__name__)
 # Enable CORS for all routes and default options
 # This CORS might be overkill and possible to tone it down not sure
@@ -22,23 +25,35 @@ lock = threading.Lock()
 def receive_command():
     # Extract json message, parse command, send it
     data = request.json
+
+    function = data['function']
+    value = data['value']
+    tankID = data['tankID']
+
     # Check value is greater than 0 (negative values result in unexpected tank behavior)
-    if int(data['value']) < 0:
+    if int(value) < 0:
         return jsonify({"status": "failed", "message": "invalid value"}), 400
-
+    
     # Extract function and construct command based on that function and value
-    command = data['function'] + " " + str(data['value'])
-
+    command = f"{function} {value}"
     print(f"Received command: {command}")
+
+    # Check tankID to figure out on which tanks to run command
+    if tankID == 'all':
+        # sets it to all tanks that have sent a GET
+        tanksToRun = tankIDs
+    elif tankID not in tankIDs:
+        return jsonify({"status": "failed", "message": "invalid tank ID"}), 400
+    else:
+        tanksToRun = [tankID]
 
     # Ensure command list doesn't get too long
     if len(readyCommands) >= maxCommands:
         readyCommands.pop(0) # remove oldest command
-
-    # Adds command and an empty list to keep track of which tanks
-    # have ran the command, and which tanks still need to
-    readyCommands.append({'command': command, 'executed_by': []})
-
+    
+    # Adds command and the list of tanks to run it
+    readyCommands.append({'command': command, 'tanksToRun': tanksToRun.copy()})
+    print(readyCommands)
     return jsonify({"status": "success", "message": "Command processed"}), 200
 
 # End point for tanks to "listen" to and take commands from
@@ -46,12 +61,20 @@ def receive_command():
 
 @app.route('/get-command', methods=['GET'])
 def send_command():
-    tank_ip = request.remote_addr # Get the ip of tank
+    tankID = request.args.get('tankID')
+    if not tankID:
+        return jsonify({"status": "failed", "message": "tankID is required"}), 400
+    # If it's a new tank, add it to server's list
+    if tankID not in tankIDs:
+        tankIDs.append(tankID)
     # Iterate through the commands to see which command to run
-    for command_info in readyCommands:
-        if tank_ip not in command_info["executed_by"]:
-            command_info["executed_by"].append(tank_ip)
-            return jsonify({"command": command_info["command"]}), 200
+    for command in readyCommands:
+        if tankID in command["tanksToRun"]:
+            command["tanksToRun"].remove(tankID)
+            # If no more tanks to run on, remove it from command list
+            if len(command["tanksToRun"]) == 0:
+                readyCommands.remove(command)
+            return jsonify({"command": command["command"]}), 200
     # If there are no commands, return no command status
     return jsonify({"status": "no command"}), 204
 
