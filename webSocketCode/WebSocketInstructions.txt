@@ -1,0 +1,28 @@
+Start with the tank and fill out your current WiFi in tankWithCamera.ino
+websocket_server should remain the same except which device number it is, so first tank is device1 etc
+Might also want to change the server if you're running it locally as opposed to on the VM
+Flash the tank with tankWithCamera.ino
+Go to twitchBot.js and fill out the username password and channel portions (first time instructions below)
+for streaming on the tank:
+
+Open your terminal or equivalent
+SSH into the VM with the username and password provided in the discord channel
+then: "cd esp32-tanks"
+(If you're doing this before I set up the virtual environment on the VM you might have to set up the virtual environment)
+"cd webSocketCode"
+"source venv/bin/activate" (this activates the virtual environment) (or whatever the virtual environment gets named instead of venv)
+"python3 wsServer.py" (you won't actually see statements that it's running until clients start connecting to it)
+
+
+otherwise: 
+run the python server as normal on your IDE of choice 
+
+then run the twitchBot code
+turn on the tank
+Type your commands into the twitch channel chat 
+
+The current way I'm streaming is through OBS, download it if thats your intention
+Add a source and add the current server IP as the url 
+for example, when using the VM to stream, the source is 45.55.200.204:8080/stream/device1
+otherwise find your IP by running the server locally and using what the terminal says is it's IP 
+

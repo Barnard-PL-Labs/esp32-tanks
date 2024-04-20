@@ -1,0 +1,22 @@
+Setting up Twitch Bot for the first time:
+
+ - Go to this site: https://twitchapps.com/tmi/ and create an account for the bot. 
+ - Once you have created your account, you should have received a token. Paste this token into the 'password' field
+ - Paste your username into the 'username' field and inside the 'channels' field
+ - Ensure you have tmi and axios installed
+ - Make sure the server is running and the tank is connected (see instructions.txt in the server directory)
+ - Run the bot: node twitchBot
+ - go to twitch.tv/<username> in your browser and enter in one of the commands described below
+ - if everything is working, the tank should run your command!
+
+The protocol for sending twitch commands is currently this format: "!<function> <tankID> <value>"
+Possible commands:
+    - "!forward <tankID> <value>"
+    - "!back <tankID> <value>"
+    - "!left <tankID> <value>"
+    - "!right <tankID> <value>"
+    - "!blink <tankID> <value>"
+    - "!light <tankID> <value>"
+- The tankID is sent from the tank in the GET request to the flask server. Currently, tankIDs start at 1 and go up iteratively (could be changed to MAC addresses).
+- The tankID sent by the tank must be the same tankID used in the Twitch commands. 
+- Can also use keyword "all" in tankID, which sends command to all tanks that have sent a GET request to the server.
