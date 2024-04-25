@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Stream {{ device_id }}</title>
+    <style>
+        img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+<img id="videoFrame" src="" alt="Video stream from {{ device_id }}">
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var device_id = "{{ device_id }}"; // Pass Python variable to know which device it is streaming for 
+    var ws = new WebSocket('ws://' + window.location.hostname + ':5001/ws/view/' + device_id);
+    ws.onmessage = function(event) {
+        document.getElementById('videoFrame').src = 'data:image/jpeg;base64,' + event.data;
+    };
+    ws.onopen = function() {
+        console.log('WebSocket connection established with device ' + device_id);
+    };
+    ws.onerror = function(error) {
+        console.error('WebSocket error:', error);
+    };
+    ws.onclose = function() {
+        console.log('WebSocket connection closed');
+    };
+});
+</script>
+</body>
+</html>

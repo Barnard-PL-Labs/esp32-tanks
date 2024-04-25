@@ -4,25 +4,17 @@ import base64
 from aiohttp import web
 import json
 
+
 # Dictionary to store connections by device ID
 connections = {}
+
 
 async def websocket_handler(websocket, path):
     print(f"Received a WebSocket connection on path: {path}")
     path_parts = path.strip('/').split('/')
 
-    # Check if there are enough parts in the path
-    if len(path_parts) < 2:
-        print("Invalid path format. At least 'role' is required.")
-        return
 
     role = path_parts[1]  # This should be 'device', 'view', or 'twitch'
-
-    # Check if a device_id is required
-    if role in ['device', 'view'] and len(path_parts) < 3:
-        print("Invalid path format for device or view. Device ID is missing.")
-        return
-
     device_id = path_parts[2] if len(path_parts) > 2 else None
 
     print(f"Role: {role}, Device ID: {device_id}")
@@ -81,57 +73,29 @@ async def handle_twitch(websocket):
                     print(f"No active connections found for device ID {device_id}")
     except websockets.exceptions.ConnectionClosed:
         print("Twitch connection closed")
-
+# Sends either stream or twitch commands depending on what's passed in 
 async def broadcast(message, device_id, target):
-    """Broadcasts a message to all connected devices or viewers based on target."""
     if device_id in connections:
         recipients = connections[device_id][target]
         for websocket in recipients:
             await websocket.send(message)
 
 
-#  HTML page that connects to the WebSocket server and displays the stream
+# HTML page that connects to the WebSocket server and displays the stream
 routes = web.RouteTableDef()
-
+# Uses the HTML page in templates to stream
 @routes.get('/stream/{device_id}')
 async def stream_page(request):
     device_id = request.match_info['device_id']
-    return web.Response(text=f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Video Stream {device_id}</title>
-        <style>
-            img {{
-                width: 100%;
-                height: auto;
-            }}
-        </style>
-    </head>
-    <body>
-    <!-- Image element for displaying the video stream -->
-    <img id="videoFrame" src="" alt="Video stream from {device_id}">
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {{
-        var device_id = "{device_id}"; // Correctly pass Python variable
-        var ws = new WebSocket('ws://' + window.location.hostname + ':5001/ws/view/' + device_id);
-        ws.onmessage = function(event) {{
-            document.getElementById('videoFrame').src = 'data:image/jpeg;base64,' + event.data;
-        }};
-        ws.onopen = function() {{
-            console.log('WebSocket connection established with device ' + device_id);
-        }};
-        ws.onerror = function(error) {{
-            console.error('WebSocket error:', error);
-        }};
-        ws.onclose = function() {{
-            console.log('WebSocket connection closed');
-        }};
-    }});
-    </script>
-    </body>
-    </html>
-    """, content_type='text/html')
+    # Load the HTML template, if having issues look at where your terminal currently is
+    with open('templates/streamPage.html', 'r') as file:
+        html_content = file.read()
+
+    html_content = html_content.replace('{{ device_id }}', device_id)
+
+    # Return the modified HTML content
+    return web.Response(text=html_content, content_type='text/html')
+
 
 # Main function to start the web server and WebSocket server
 async def main():
