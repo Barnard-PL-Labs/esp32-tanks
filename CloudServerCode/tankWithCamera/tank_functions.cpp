@@ -1,7 +1,6 @@
 #include <WiFi.h>
 #include "stdlib.h"
 #include "config.h"
-#include <BLEDevice.h>
 #include <WebServer.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
@@ -201,40 +200,53 @@ void executeCommand(char direction, int value) {
 }
 
 /******* Network Functions *******/
-
-void checkForCommands() {
-  if (serverName.length() > 0) {
+void sendIP() {
     HTTPClient http;
-    //Serial.println("\nRequesting command...");
-    http.begin(serverName);  // Construct the URL for the GET request
-
-    int httpCode = http.GET();
-
-    if (httpCode == 200) {  // Check for OK response
-      String payload = http.getString();  // Get the command
-
-      StaticJsonDocument<200> doc;  // Create a JSON document 
-      DeserializationError error = deserializeJson(doc, payload);  // Parse the json
-
-      if (!error) {  // Check if it succeeded
-        const char* command = doc["command"];  // Extract the command string
-
-
-        char direction = command[0];  // Get the first character as the direction
-        int value = String(&command[2]).toInt();  // Convert the rest to an integer
-
-        executeCommand(direction, value); 
+    http.begin(serverIP);
+    http.addHeader("Content-Type", "application/json");
+    
+    String ipAddress = WiFi.localIP().toString();
+    String jsonData = "{\"ip_address\":\"" + ipAddress + "\"}";
+    
+    int httpResponseCode = http.POST(jsonData);
+    
+    if (httpResponseCode > 0) {
+        String response = http.getString();
+        Serial.println(httpResponseCode);
+        Serial.println(response);
+    }
+    else {
+        Serial.println("Error on sending POST");
+    }
+    http.end();
+}
+// This function deals with the JSON command sent from the flask server 
+void handleCommand() {
+  if (server.hasArg("plain")) {
+    String requestBody = server.arg("plain");
+    DynamicJsonDocument doc(1024);
+    auto error = deserializeJson(doc, requestBody);
+    Serial.println("hit");
+    if (!error) {
+      const char* function = doc["function"];
+      int value = doc["value"];
+      if (function != nullptr) {
+        char direction = function[0];
+        Serial.print("Direction: ");
+        Serial.print(direction);
+        Serial.print(", Value: ");
+        Serial.println(value);
+        executeCommand(direction, value);
+        server.send(200, "application/json", "{\"message\":\"Command received\"}");
       } else {
-        Serial.print("JSON parsing failed: ");
-        Serial.println(error.c_str());
+        server.send(400, "application/json", "{\"error\":\"Command not found\"}");
       }
     } else {
-      Serial.print("HTTP request failed with code: ");
-      Serial.println(httpCode);
+      server.send(400, "application/json", "{\"error\":\"JSON parsing failed\"}");
     }
-
-    http.end();  // Free resources
-   }
+  } else {
+    server.send(400, "application/json", "{\"error\":\"No body found\"}");
+  }
 }
 
 

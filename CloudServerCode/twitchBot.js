@@ -14,11 +14,11 @@ const commands = {
 // Set up the bot
 const client = new tmi.Client({
     identity: {
-        username: 'MyUsername', // Needs a valid twitch username/account, can be one set up specifically for the bot apparently
-        password: 'MyPassword'  // You can generate a token using 
+        username: 'Username', // Needs a valid twitch username/account, can be one set up specifically for the bot apparently
+        password: 'Password'  // You can generate a token using 
                                                           // the Twitch Chat OAuth Password Generator: https://twitchapps.com/tmi/
     },
-    channels: [ 'MyChannel' ] // Whichever channel is being used, 
+    channels: [ 'Channel' ] // Whichever channel is being used, 
                                 // and not the full address, but just the username like 
                                 // shroud or your own personal username 
 });
@@ -39,7 +39,7 @@ client.on('message', (channel, tags, message, self) => {
         command.value = commandValue.toString(); // Set the value in the command object
         command.tankID = tankToRun
         console.log("sending")
-        axios.post('http://45.55.200.204:5001/command', command)
+        axios.post('http://192.168.1.41:5001/twitch_command', command) // Change IP here depending on IP of server
         .then(response => {
             // Handle response
             console.log(response.data);

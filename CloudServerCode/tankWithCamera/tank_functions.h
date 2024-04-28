@@ -7,9 +7,9 @@ extern WebServer server;
 extern const char*  serverIP;
 
 void executeCommand(char direction, int value);
+void handleCommand();
 
 // Tank Movement Functions
-void handleCommand();
 void accelerateForward();
 void accelerateForward(int duration);
 void accelerateBackward();

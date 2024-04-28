@@ -4,27 +4,48 @@
 #include <WebServer.h>
 #include "config.h"
 #include "tank_functions.h"
-#include <BLEDevice.h>
 #include "esp_camera.h"
 #include <HTTPClient.h>
-#include <ArduinoWebsockets.h> // ArduinoWebsockets by Gil Maimon from the arduino library
 
 
-const char* ssid = "Columbia University";  // Enter the name of your WiFi
-const char* password = "";       // Enter WiFi password. Leave empty if none
-const char* serverIP = "http://45.55.200.204:5001/upload"; // if I forget to change this, this should be the VM IP
-                                                            // so "http://45.55.200.204:8080/upload" 
-// added tankID to end of this request, CHANGE FOR EACH TANK
-String serverName = "http://45.55.200.204:5001/get-command?tankID=1"; // same as severIP, this is a string for the checkForCommands function usage
-// const char* websocket_server = "ws://192.168.1.41:5001/"; // IP address, i.e.  ws://192.168.1.100:5001
-// using namespace websockets;
-
-// WebsocketsClient webSocket;
+const char* ssid = "SpectrumSetup-E6CB";  // Enter the name of your WiFi
+const char* password = "expresscontact279";       // Enter WiFi password. Leave empty if none
+const char* serverIP = "http://192.168.1.41:5001/receive_ip"; // IP address of the flask server, and how the tank sends it's own IP
+WebServer server(80);
 
 
-// WebServer server(80);
-// void connectToVM();
-// void startCameraServer();
+void sendIP();
+void startCameraServer();
+//void handleCommand();
+// Handling commands with JSON 
+// void handleCommand() {
+//   if (server.hasArg("plain")) {
+//     String requestBody = server.arg("plain");
+//     DynamicJsonDocument doc(1024);
+//     auto error = deserializeJson(doc, requestBody);
+//     Serial.println("hit");
+//     if (!error) {
+//       const char* function = doc["function"];
+//       int value = doc["value"];
+//       if (function != nullptr) {
+//         char direction = function[0];  // Get the first char of the command 
+//         Serial.print("Direction: ");
+//         Serial.print(direction);
+//         Serial.print(", Value: ");
+//         Serial.println(value);
+//         executeCommand(direction, value);
+//         server.send(200, "application/json", "{\"message\":\"Command received\"}");
+//       } else {
+//         server.send(400, "application/json", "{\"error\":\"Command not found\"}");
+//       }
+//     } else {
+//       server.send(400, "application/json", "{\"error\":\"JSON parsing failed\"}");
+//     }
+//   }
+//    else {
+//     server.send(400, "application/json", "{\"error\":\"No body found\"}");
+//   }
+// }
 
 void setup() {
   Serial.begin(115200);
@@ -101,78 +122,20 @@ void setup() {
   if(config.pixel_format == PIXFORMAT_JPEG){
     s->set_framesize(s, FRAMESIZE_QVGA);
   }
+  server.on("/command", HTTP_POST, handleCommand);
 
-  //startCameraServer();
+  startCameraServer();
+  sendIP();
 
-  //server.begin();
-  // websocket attempt stuff
-  // webSocket.onEvent(onWebSocketEvent);
-  // webSocket.connect(websocket_server);
+
+  server.begin();
+
 }
 
 void loop() {
-  checkForCommands();
+  server.handleClient();
 
-  // below it sends a jpeg to the server url 
-  // works but probably not super efficient, and it makes like a million post requests
-  // which i could see being an issue 
-  camera_fb_t * fb = NULL;
-  fb = esp_camera_fb_get();
-  if(!fb) {
-    Serial.println("Camera capture failed");
-    return;
-  }
-
-  HTTPClient http;
-  http.begin(serverIP);
-  http.addHeader("Content-Type", "image/jpeg");
-  
-  int httpResponseCode = http.POST(fb->buf, fb->len);
-  if(httpResponseCode > 0) {
-    String response = http.getString();
-    Serial.println(httpResponseCode);
-    Serial.println(response);
-  }
-  else {
-    Serial.print("Error on sending POST: ");
-    Serial.println(httpResponseCode);
-  }
-
-  http.end();
-  esp_camera_fb_return(fb);
-
-  // delay(1000); // Delay for 1 second, might have been too many posts 
- 
 }
-  
-  // more websocket stuff. it sends binary to the websocket server
-//  webSocket.poll();
 
-//     if(webSocket.available()) {
-//         camera_fb_t* fb = esp_camera_fb_get();
-//         if (!fb) {
-//             Serial.println("Camera capture failed");
-//             return;
-//         }
-
-//         // Send frame as binary
-//         webSocket.sendBinary((const char*)fb->buf, fb->len);
-//         esp_camera_fb_return(fb);
-//     }
-
-//     delay(100);  // Slight delay
-// }
-
-// void onWebSocketEvent(WebsocketsEvent event, String data) {
-//     if(event == WebsocketsEvent::ConnectionOpened) {
-//         Serial.println("Connection Opened");
-//     } else if(event == WebsocketsEvent::ConnectionClosed) {
-//         Serial.println("Connection Closed");
-//     } else if(event == WebsocketsEvent::GotPing) {
-//         Serial.println("Got a Ping!");
-//     } else if(event == WebsocketsEvent::GotPong) {
-//         Serial.println("Got a Pong!");
-//     }
-// }
 
   
