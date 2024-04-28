@@ -8,44 +8,14 @@
 #include <HTTPClient.h>
 
 
-const char* ssid = "SpectrumSetup-E6CB";  // Enter the name of your WiFi
-const char* password = "expresscontact279";       // Enter WiFi password. Leave empty if none
+const char* ssid = "";  // Enter the name of your WiFi
+const char* password = "";       // Enter WiFi password. Leave empty if none
 const char* serverIP = "http://192.168.1.41:5001/receive_ip"; // IP address of the flask server, and how the tank sends it's own IP
 WebServer server(80);
 
 
 void sendIP();
 void startCameraServer();
-//void handleCommand();
-// Handling commands with JSON 
-// void handleCommand() {
-//   if (server.hasArg("plain")) {
-//     String requestBody = server.arg("plain");
-//     DynamicJsonDocument doc(1024);
-//     auto error = deserializeJson(doc, requestBody);
-//     Serial.println("hit");
-//     if (!error) {
-//       const char* function = doc["function"];
-//       int value = doc["value"];
-//       if (function != nullptr) {
-//         char direction = function[0];  // Get the first char of the command 
-//         Serial.print("Direction: ");
-//         Serial.print(direction);
-//         Serial.print(", Value: ");
-//         Serial.println(value);
-//         executeCommand(direction, value);
-//         server.send(200, "application/json", "{\"message\":\"Command received\"}");
-//       } else {
-//         server.send(400, "application/json", "{\"error\":\"Command not found\"}");
-//       }
-//     } else {
-//       server.send(400, "application/json", "{\"error\":\"JSON parsing failed\"}");
-//     }
-//   }
-//    else {
-//     server.send(400, "application/json", "{\"error\":\"No body found\"}");
-//   }
-// }
 
 void setup() {
   Serial.begin(115200);
