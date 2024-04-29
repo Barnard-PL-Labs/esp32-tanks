@@ -6,7 +6,6 @@ This portion of the code is for when you believe peer-to-peer will be enabled on
 
 * **IP Registration**: Automatically registers and tracks the IP addresses of ESP32 devices as they connect to the network.
 * **Command Processing**: Receives and processes commands from Twitch, distributing them to the appropriate ESP32 devices based on the command details.
-Setup and Configuration
 
 ## Setup and Configuration
 
